@@ -1,0 +1,33 @@
+#: /plugins/payment/views/admin/fondy.ctp
+msgid "Secret Key"
+msgstr "Секретный ключ"
+
+#: /plugins/payment/views/admin/fondy.ctp
+msgid "Language"
+msgstr "Язык окна оплаты"
+
+
+#: /plugins/payment/views/admin/fondy.ctp
+msgid "Merchant ID"
+msgstr "ID номер продавца"
+
+#: /plugins/payment/views/admin/fondy.ctp
+msgid "Currency"
+msgstr "Валюта мерчанта(по умолчанию валюта магазина)"
+
+
+#: /plugins/payment/views/admin/fondy.ctp
+msgid "Oplata error"
+msgstr "Ошибка оплаты, отклонено."
+
+msgid "Order #"
+msgstr "Номер заказа:"
+
+msgid "Error code"
+msgstr "Код ошибки:"
+
+msgid "Error description"
+msgstr "Описание ошибки:"
+
+
+
