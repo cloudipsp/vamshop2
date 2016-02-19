@@ -157,6 +157,7 @@ function checkoutInit(url) {
     button.setAmount(' . $oplata_args[amount] . ', "' . $oplata_args[currency] . '", true);
     button.setHost("api.fondy.eu");
     button.addParam("order_desc","' . $oplata_args[order_desc] . '");
+	button.addParam("signature","' . $oplata_args[signature] . '");
     button.addParam("order_id","' . $oplata_args[order_id] . '");
     button.addParam("lang","' . $oplata_args[lang] . '");//button.addParam("delayed","N");
     button.addParam("server_callback_url","' . $oplata_args[server_callback_url] . '");
