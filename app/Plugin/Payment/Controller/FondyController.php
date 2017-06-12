@@ -95,12 +95,20 @@ class FondyController extends PaymentAppController  {
                     $currency = $_SESSION['Customer']['currency_code'];
                 }
                 $desc = 'Order : ' . $order['Order']['id'];
-                $result_url = 'http://' . $_SERVER['HTTP_HOST'] . BASE . '/orders/place_order/';
-
+				$isSecure = false;
+				if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
+					$isSecure = true;
+				}
+				elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' || !empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on') {
+					$isSecure = true;
+				}
+				$REQUEST_PROTOCOL = $isSecure ? 'https://' : 'http://';
+                $result_url = $REQUEST_PROTOCOL . $_SERVER['HTTP_HOST'] . BASE . '/orders/place_order/';
+			
                 $oplata_args = array('order_id' => $order['Order']['id'] . fondycsl::ORDER_SEPARATOR . time(),
                     'merchant_id' => $merchant_id,
                     'order_desc' => $desc,
-                    'amount' => $order['Order']['total'],
+                    'amount' => round($order['Order']['total']*100),
                     'currency' => $currency,
                     'server_callback_url' => $result_url,
                     'response_url' => $result_url,
@@ -108,7 +116,17 @@ class FondyController extends PaymentAppController  {
                     'sender_email' => $order['Order']['email']);
 
                 $oplata_args['signature'] = fondycsl::getSignature($oplata_args, $secret_key);
-
+				$ch = curl_init();
+				curl_setopt($ch, CURLOPT_URL, 'https://api.fondy.eu/api/checkout/url/');
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+				curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-type: application/json'));
+				curl_setopt($ch, CURLOPT_POST, true);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array('request'=>$oplata_args)));
+				$result = json_decode(curl_exec($ch));
+				if ($result->response->response_status == 'failure'){
+					echo $result->response->error_message;
+					exit;
+				}
                 $content = '
         <script src="https://api.fondy.eu/static_common/v1/checkout/ipsp.js"></script>
 <style>
@@ -152,18 +170,7 @@ function checkoutInit(url) {
 		this.loadUrl(url);
 	});
     };
-    var button = $ipsp.get("button");
-    button.setMerchantId(' . $oplata_args[merchant_id] . ');
-    button.setAmount(' . $oplata_args[amount] . ', "' . $oplata_args[currency] . '", true);
-    button.setHost("api.fondy.eu");
-    button.addParam("order_desc","' . $oplata_args[order_desc] . '");
-	button.addParam("signature","' . $oplata_args[signature] . '");
-    button.addParam("order_id","' . $oplata_args[order_id] . '");
-    button.addParam("lang","' . $oplata_args[lang] . '");//button.addParam("delayed","N");
-    button.addParam("server_callback_url","' . $oplata_args[server_callback_url] . '");
-    button.addParam("sender_email","' . $oplata_args[sender_email] . '");
-    button.setResponseUrl("' . $oplata_args[response_url] . '");
-    checkoutInit(button.getUrl());
+    checkoutInit("' . $result->response->checkout_url . '");
 
 $(document).ready(function(){
  $.colorbox({
